@@ -40,7 +40,8 @@
   },
   "homepage": "https://github.com/erlinerd/pi-token-summary#readme",
   "devDependencies": {
-    "@types/node": "^26.6.2"
+    "@types/node": "^26.6.2",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "@earendil-works/pi-tui": "^0.86.0"
