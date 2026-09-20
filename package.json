@@ -1,6 +1,6 @@
 {
   "name": "@erlin-ai/pi-token-summary",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Token/cost inline stats for the pi coding agent: dim transcript line with this turn's output, cumulative tokens, context %, and cost. Modes via /token-summary verbose|brief|off.",
   "type": "module",
   "files": [
