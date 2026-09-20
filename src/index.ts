@@ -47,7 +47,6 @@ const MODE_LABEL: Record<Mode, string> = {
 };
 
 const ENTRY_TYPE = "token-summary-turn";
-const LEGACY_ENTRY_TYPE = "exit-summary-turn"; // pre-rename sessions
 const CONFIG_PATH = join(
   process.env.PI_HOME ?? join(homedir(), ".pi"),
   "agent",
@@ -100,7 +99,6 @@ export default function (pi: any) {
     return new Text(line ? theme.fg("dim", line) : "");
   };
   pi.registerEntryRenderer(ENTRY_TYPE, renderEntry);
-  pi.registerEntryRenderer(LEGACY_ENTRY_TYPE, renderEntry);
 
   // ---------- shared helpers ----------
   function seedFromFile(ctx: any) {

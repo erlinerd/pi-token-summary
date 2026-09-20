@@ -3,56 +3,57 @@
 [![CI](https://github.com/erlinerd/pi-token-summary/actions/workflows/ci.yml/badge.svg)](https://github.com/erlinerd/pi-token-summary/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-pi coding agent 的 **token 消耗内联显示**扩展。agent 回复后，会话流里直接追加一行暗色统计：
+English | [中文](README.zh-CN.md)
+
+**Inline token/cost stats for the pi coding agent.** After each agent reply, a dim stats line is appended to the conversation:
 
 ```text
-↓1.2k 本轮 · Σ↓20.5k tok · ctx 63% · $0.11 · glm-5.3-flash
+↓1.2k this turn · Σ↓20.5k tok · ctx 63% · $0.11 · glm-5.3-flash
 ```
 
-- **↓本轮**：这条回复输出的 token
-- **Σ↓**：本会话累计输出
-- **ctx**：上下文占用百分比
-- **$**：累计成本
-- 模型名
+- **↓this turn**: output tokens of this reply
+- **Σ↓**: cumulative session output
+- **ctx**: context window usage
+- **$**: cumulative cost
+- model name
 
-统计行是自定义 session 条目（`appendEntry` + `registerEntryRenderer`），只进 TUI 渲染、不参与 LLM 上下文，resume 旧会话时历史统计行原样重现。
+The stats line is a custom session entry (`appendEntry` + `registerEntryRenderer`): it renders in the TUI only, never enters LLM context, and historical lines re-render when a session is resumed.
 
-## 三档显示模式
+## Display modes
 
 ```bash
-/token-summary verbose   # 每条 assistant 消息后都显示（含工具调用中间消息）
-/token-summary brief     # 只在每轮末尾显示一次（默认）
-/token-summary off       # 不显示；累计值照常统计，报告不受影响
-/token-summary           # 查看完整报告 + 当前模式
+/token-summary verbose   # after EVERY assistant message (incl. tool-call turns)
+/token-summary brief     # once at the end of each turn (default)
+/token-summary off       # no inline lines; totals still tracked, report works
+/token-summary           # full session report + current mode
 ```
 
-模式持久化在 `~/.pi/agent/pi-token-summary.json`，重启后保留。默认 **简略**。
+The mode persists in `~/.pi/agent/pi-token-summary.json` across restarts. Default: **brief**.
 
-说明：pi 的 `turn_end` 事件在**每条** assistant 消息后触发；带工具调用的一轮对话会有多条消息。"详细"逐条显示，"简略"只在 `stopReason` 非 `toolUse`（即整轮真正结束）时显示一次。
+Note: pi's `turn_end` event fires after **every** assistant message; a turn with tool calls produces multiple messages. `verbose` shows each one, `brief` shows once when `stopReason` is not `toolUse` (i.e. the turn truly ended).
 
-## 原理
+## How it works
 
-pi 扩展 API 的 `turn_end` 事件带本轮 assistant 消息的 `usage`；`pi.appendEntry()` 把渲染好的统计行持久化到 session 文件，`pi.registerEntryRenderer()` 负责在对话流中以暗色主题渲染。
-启动时从 session 文件播种累计值，resume 旧会话也能续上。纯本地读取，无网络请求。
+pi's extension API provides the message `usage` on `turn_end`; `pi.appendEntry()` persists the rendered line to the session file and `pi.registerEntryRenderer()` renders it dim in the transcript.
+Cumulative values are seeded from the session file at startup, so resumed sessions continue accurately. Purely local — no network requests.
 
-旧版（pi-exit-summary）会话中的历史统计行同样可以渲染，升级无缝。
 
-## 安装
+## Install
 
 ```bash
 pi install github:erlinerd/pi-token-summary   # GitHub
-pi install npm:pi-token-summary               # 发布后
+pi install npm:pi-token-summary               # once published to npm
 ```
 
-新开会话即生效。
+Takes effect in new sessions.
 
-## 卸载
+## Uninstall
 
 ```bash
 pi uninstall pi-token-summary
 ```
 
-## 开发
+## Development
 
 ```bash
 npm install

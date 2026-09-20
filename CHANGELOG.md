@@ -22,17 +22,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   mode.
 - Mode is persisted to `~/.pi/agent/pi-token-summary.json` and survives
   restarts.
-- Backwards compatible: historical lines written by v0.1.0 (`pi-exit-summary`)
-  entries still render.
-
-### Changed
-
-- Renamed the package from `pi-exit-summary` to `pi-token-summary`.
-
-## [0.1.0] - 2026-09-20
-
-### Added
-
-- Initial release (as `pi-exit-summary`): per-turn token/cost status line in
-  the pi footer, plus an `/exit-summary` command printing the full session
-  report.
