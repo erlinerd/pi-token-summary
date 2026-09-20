@@ -42,7 +42,7 @@ pi 扩展 API 的 `turn_end` 事件带本轮 assistant 消息的 `usage`；`pi.a
 
 ```bash
 pi install github:erlinerd/pi-token-summary   # GitHub
-pi install npm:pi-token-summary               # 发布后
+pi install npm:@erlin-ai/pi-token-summary               # 发布后
 ```
 
 新开会话即生效。
@@ -50,7 +50,7 @@ pi install npm:pi-token-summary               # 发布后
 ## 卸载
 
 ```bash
-pi uninstall pi-token-summary
+pi uninstall @erlin-ai/pi-token-summary
 ```
 
 ## 开发

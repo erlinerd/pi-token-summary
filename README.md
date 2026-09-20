@@ -42,7 +42,7 @@ Cumulative values are seeded from the session file at startup, so resumed sessio
 
 ```bash
 pi install github:erlinerd/pi-token-summary   # GitHub
-pi install npm:pi-token-summary               # once published to npm
+pi install npm:@erlin-ai/pi-token-summary               # once published to npm
 ```
 
 Takes effect in new sessions.
@@ -50,7 +50,7 @@ Takes effect in new sessions.
 ## Uninstall
 
 ```bash
-pi uninstall pi-token-summary
+pi uninstall @erlin-ai/pi-token-summary
 ```
 
 ## Development
