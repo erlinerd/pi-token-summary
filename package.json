@@ -44,7 +44,7 @@
     "tsx": "^4.23.14",
     "typescript": "^7.0.2"
   },
-  "dependencies": {
-    "@earendil-works/pi-tui": "^0.86.0"
+  "peerDependencies": {
+    "@earendil-works/pi-tui": "*"
   }
 }
