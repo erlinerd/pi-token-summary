@@ -1,5 +1,8 @@
 # pi-token-summary
 
+[![CI](https://github.com/erlinerd/pi-token-summary/actions/workflows/ci.yml/badge.svg)](https://github.com/erlinerd/pi-token-summary/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 pi coding agent 的 **token 消耗内联显示**扩展。agent 回复后，会话流里直接追加一行暗色统计：
 
 ```text
@@ -37,8 +40,8 @@ pi 扩展 API 的 `turn_end` 事件带本轮 assistant 消息的 `usage`；`pi.a
 ## 安装
 
 ```bash
-pi install /path/to/pi-token-summary      # 本地路径
-pi install npm:pi-token-summary           # 发布后
+pi install github:erlinerd/pi-token-summary   # GitHub
+pi install npm:pi-token-summary               # 发布后
 ```
 
 新开会话即生效。

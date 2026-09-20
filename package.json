@@ -1,7 +1,7 @@
 {
   "name": "pi-token-summary",
   "version": "0.2.0",
-  "description": "Token/cost inline stats for the pi coding agent: dim transcript line with this turn's output, cumulative tokens, context %, and cost. Modes via /token-summary 详细|简略|关.",
+  "description": "Token/cost inline stats for the pi coding agent: dim transcript line with this turn's output, cumulative tokens, context %, and cost. Modes via /token-summary verbose|brief|off.",
   "type": "module",
   "files": [
     "src",
@@ -31,6 +31,14 @@
   ],
   "author": "lei",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erlinerd/pi-token-summary.git"
+  },
+  "bugs": {
+    "url": "https://github.com/erlinerd/pi-token-summary/issues"
+  },
+  "homepage": "https://github.com/erlinerd/pi-token-summary#readme",
   "devDependencies": {
     "@types/node": "^26.6.2"
   },
