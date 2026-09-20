@@ -1,7 +1,7 @@
 {
-  "name": "pi-exit-summary",
-  "version": "0.1.0",
-  "description": "Per-turn token/cost status line for the pi coding agent: footer shows this turn's output, cumulative tokens, context %, and cost after every reply. Plus /exit-summary for a full session report.",
+  "name": "pi-token-summary",
+  "version": "0.2.0",
+  "description": "Token/cost inline stats for the pi coding agent: dim transcript line with this turn's output, cumulative tokens, context %, and cost. Modes via /token-summary 详细|简略|关.",
   "type": "module",
   "files": [
     "src",
@@ -26,12 +26,15 @@
     "pi-coding-agent",
     "extension",
     "token-usage",
-    "session-summary",
+    "token-summary",
     "cost"
   ],
   "author": "lei",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^26.6.2"
+  },
+  "dependencies": {
+    "@earendil-works/pi-tui": "^0.86.0"
   }
 }
