@@ -19,7 +19,7 @@ import {
   renderLine,
   renderStatus,
   summarizeSessionFile,
-} from "../lib/summarize.mjs";
+} from "../lib/summarize";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";

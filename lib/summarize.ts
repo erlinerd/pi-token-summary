@@ -4,7 +4,32 @@
 
 import { readFileSync } from "node:fs";
 
-export function summarizeSessionFile(path) {
+export interface SessionSummary {
+  turns: number;
+  output: number;
+  cost: number;
+  lastTokens: number;
+  model: string;
+}
+
+interface ParsedUsage {
+  output?: number;
+  totalTokens?: number;
+  cost?: { total?: number };
+}
+
+export interface Cumulative extends SessionSummary {}
+
+export interface TurnUsage {
+  output?: number;
+}
+
+export interface RenderStatusOptions {
+  /** Join with an unstyled "·" (no ANSI dim) for themed TUI components. */
+  plain?: boolean;
+}
+
+export function summarizeSessionFile(path: string): SessionSummary {
   let turns = 0;
   let output = 0;
   let cost = 0;
@@ -13,7 +38,10 @@ export function summarizeSessionFile(path) {
 
   for (const line of readFileSync(path, "utf8").split("\n")) {
     if (!line.includes('"usage"')) continue;
-    let j;
+    let j: {
+      message?: { usage?: ParsedUsage; model?: string };
+      usage?: ParsedUsage;
+    };
     try {
       j = JSON.parse(line);
     } catch {
@@ -31,16 +59,23 @@ export function summarizeSessionFile(path) {
   return { turns, output, cost, lastTokens, model };
 }
 
-const k = (n) => (n >= 1000 ? (n / 1000).toFixed(1) + "k" : String(n));
-const pct = (v) =>
+const k = (n: number): string =>
+  n >= 1000 ? (n / 1000).toFixed(1) + "k" : String(n);
+const pct = (v: number | null | undefined): string =>
   typeof v === "number" && Number.isFinite(v) ? Math.round(v) + "%" : "-";
-const usd = (v) => "$" + (v >= 0.01 || v === 0 ? v.toFixed(2) : v.toFixed(3));
+const usd = (v: number): string =>
+  "$" + (v >= 0.01 || v === 0 ? v.toFixed(2) : v.toFixed(3));
 
 // One-line footer/status render. turnUsage = current turn's usage (or null).
 // opts.plain: join with an unstyled "·" (no ANSI dim) for themed TUI components.
-export function renderStatus(cum, turnUsage, ctxPct, opts = {}) {
+export function renderStatus(
+  cum: Cumulative | null,
+  turnUsage: TurnUsage | null,
+  ctxPct: number | null,
+  opts: RenderStatusOptions = {},
+): string {
   if (!cum || (!cum.turns && !turnUsage)) return "";
-  const parts = [];
+  const parts: string[] = [];
   if (turnUsage && typeof turnUsage.output === "number") {
     parts.push(`↓${k(turnUsage.output)} 本轮`);
   }
@@ -52,7 +87,7 @@ export function renderStatus(cum, turnUsage, ctxPct, opts = {}) {
 }
 
 // Session-end style line (kept for /token-summary and possible CLI use).
-export function renderLine(s) {
+export function renderLine(s: SessionSummary | null): string {
   if (!s || s.turns === 0) return "";
   const parts = [
     `会话 ${s.turns} 轮`,

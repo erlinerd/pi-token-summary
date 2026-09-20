@@ -56,7 +56,7 @@ pi uninstall pi-token-summary
 
 ```bash
 npm install
-npm test        # node --test
+npm test        # tsx --test
 npx tsc --noEmit
 ```
 

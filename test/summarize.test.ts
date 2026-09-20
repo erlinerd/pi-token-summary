@@ -7,16 +7,21 @@ import {
   renderLine,
   renderStatus,
   summarizeSessionFile,
-} from "../lib/summarize.mjs";
+} from "../lib/summarize";
 
-function fixture(lines) {
+function fixture(lines: string[]): string {
   const dir = mkdtempSync(join(tmpdir(), "pi-token-summary-"));
   const p = join(dir, "session.jsonl");
   writeFileSync(p, lines.join("\n") + "\n");
   return p;
 }
 
-const usage = (out, cost, total, model) =>
+const usage = (
+  out: number,
+  cost: number,
+  total: number,
+  model: string,
+): string =>
   JSON.stringify({
     type: "message",
     message: {
