@@ -20,6 +20,7 @@ import {
   renderStatus,
   summarizeSessionFile,
 } from "../lib/summarize";
+import type { TurnTiming } from "../lib/summarize";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -93,6 +94,13 @@ export default function (pi: any) {
   let seeded = false;
   let mode: Mode = loadMode();
 
+  // Per-stream timing for the TPS segment. Semantics follow pi-token-speed:
+  // TTFT = user message → first streamed content of the current assistant
+  // stream; duration = first content → turn_end of the same stream.
+  let ttftStart = 0;
+  let streamStart = 0;
+  let ttftMs: number | null = null;
+
   // ---------- inline transcript line ----------
   const renderEntry = (entry: any, _opts: any, theme: any) => {
     const line: string | undefined = entry?.data?.line;
@@ -142,6 +150,27 @@ export default function (pi: any) {
     seedFromFile(ctx);
   });
 
+  pi.on("message_start", async (event: any) => {
+    if (event?.message?.role === "user") {
+      ttftStart = Date.now();
+      ttftMs = null;
+    }
+  });
+
+  pi.on("message_update", async (event: any) => {
+    const ev = event?.assistantMessageEvent;
+    const type = ev?.type;
+    if (
+      !streamStart &&
+      (type === "text_start" ||
+        type === "thinking_start" ||
+        type === "toolcall_start")
+    ) {
+      streamStart = Date.now();
+      if (ttftStart) ttftMs = streamStart - ttftStart;
+    }
+  });
+
   pi.on("turn_end", async (event: any, ctx: any) => {
     seedFromFile(ctx);
     const usage: Usage | undefined = event?.message?.usage;
@@ -154,14 +183,27 @@ export default function (pi: any) {
     const model = event?.message?.model;
     if (model) cum.model = model;
 
+    // Close out this stream's timing before any early return; each assistant
+    // message (incl. tool-call rounds) gets its own measurement.
+    let timing: TurnTiming | undefined;
+    if (streamStart) {
+      timing = { durationMs: Date.now() - streamStart, ttftMs };
+    }
+    streamStart = 0;
+    ttftMs = null;
+
     // verbose: every message; brief: round end only (no pending tool calls);
     // off: transcript stays clean, totals keep counting for the report.
     if (mode === "off") return;
     if (mode === "brief" && event?.message?.stopReason === "toolUse") return;
 
-    const line = renderStatus(cum, usage ?? null, contextPercent(ctx), {
-      plain: true,
-    });
+    const line = renderStatus(
+      cum,
+      usage ?? null,
+      contextPercent(ctx),
+      { plain: true },
+      timing,
+    );
     if (line) {
       try {
         pi.appendEntry(ENTRY_TYPE, { line });

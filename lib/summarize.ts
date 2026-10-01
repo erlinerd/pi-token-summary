@@ -24,6 +24,13 @@ export interface TurnUsage {
   output?: number;
 }
 
+export interface TurnTiming {
+  /** Wall-clock duration of this assistant stream (ms). */
+  durationMs?: number;
+  /** User message → first streamed content (ms), when known. */
+  ttftMs?: number | null;
+}
+
 export interface RenderStatusOptions {
   /** Join with an unstyled "·" (no ANSI dim) for themed TUI components. */
   plain?: boolean;
@@ -66,6 +73,23 @@ const pct = (v: number | null | undefined): string =>
 const usd = (v: number): string =>
   "$" + (v >= 0.01 || v === 0 ? v.toFixed(2) : v.toFixed(3));
 
+// "TPS: 1600.0 tok/s (641 tok in 4.9s · TTFT: 6282 ms)" — omitted when stream
+// timing is missing or degenerate (zero tokens / zero duration).
+export function formatTps(
+  output: number | undefined,
+  timing?: TurnTiming,
+): string {
+  const dur = timing?.durationMs;
+  if (!output || !dur || dur <= 0) return "";
+  const tps = output / (dur / 1000);
+  if (!Number.isFinite(tps)) return "";
+  const ttft =
+    typeof timing?.ttftMs === "number" && timing.ttftMs >= 0
+      ? ` · TTFT: ${Math.round(timing.ttftMs)} ms`
+      : "";
+  return `TPS: ${tps.toFixed(1)} tok/s (${output} tok in ${(dur / 1000).toFixed(1)}s${ttft})`;
+}
+
 // One-line footer/status render. turnUsage = current turn's usage (or null).
 // opts.plain: join with an unstyled "·" (no ANSI dim) for themed TUI components.
 export function renderStatus(
@@ -73,12 +97,15 @@ export function renderStatus(
   turnUsage: TurnUsage | null,
   ctxPct: number | null,
   opts: RenderStatusOptions = {},
+  timing?: TurnTiming,
 ): string {
   if (!cum || (!cum.turns && !turnUsage)) return "";
   const parts: string[] = [];
   if (turnUsage && typeof turnUsage.output === "number") {
     parts.push(`↓${k(turnUsage.output)} 本轮`);
   }
+  const tps = formatTps(turnUsage?.output, timing);
+  if (tps) parts.push(tps);
   parts.push(`Σ↓${k(cum.output)} tok`);
   parts.push(`ctx ${pct(ctxPct)}`);
   parts.push(usd(cum.cost));

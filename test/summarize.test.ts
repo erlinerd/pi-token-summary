@@ -4,6 +4,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  formatTps,
   renderLine,
   renderStatus,
   summarizeSessionFile,
@@ -112,4 +113,41 @@ test("renderStatus plain mode: unstyled separator, no ANSI codes", () => {
 
   const styled = renderStatus(cum, null, null);
   assert.match(styled, /\x1b\[2m/);
+});
+
+test("renderStatus with timing: TPS segment after 本轮, before Σ", () => {
+  const line = renderStatus(
+    {
+      turns: 5,
+      output: 20500,
+      cost: 0.114,
+      lastTokens: 62800,
+      model: "glm-5.3-flash",
+    },
+    { output: 641 },
+    27,
+    { plain: true },
+    { durationMs: 4900, ttftMs: 6282 },
+  );
+  // 641 tok / 4.9s = 130.8 tok/s
+  assert.match(line, /TPS: 130\.8 tok\/s \(641 tok in 4\.9s · TTFT: 6282 ms\)/);
+  assert.ok(line.indexOf("本轮") < line.indexOf("TPS:"));
+  assert.ok(line.indexOf("TPS:") < line.indexOf("Σ"));
+});
+
+test("formatTps omits TTFT when unknown, drops segment when degenerate", () => {
+  assert.equal(
+    formatTps(641, { durationMs: 4900 }),
+    "TPS: 130.8 tok/s (641 tok in 4.9s)",
+  );
+  // no duration / zero duration / zero output → no segment
+  assert.equal(formatTps(641, {}), "");
+  assert.equal(formatTps(641, { durationMs: 0 }), "");
+  assert.equal(formatTps(0, { durationMs: 4900 }), "");
+  assert.equal(formatTps(undefined, { durationMs: 4900 }), "");
+  // negative TTFT is untrustworthy → dropped, TPS kept
+  assert.equal(
+    formatTps(641, { durationMs: 4900, ttftMs: -5 }),
+    "TPS: 130.8 tok/s (641 tok in 4.9s)",
+  );
 });
