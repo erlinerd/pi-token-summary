@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-10-01
+
+### Added
+
+- Per-stream TPS segment in the inline stats line, e.g.
+  `TPS: 1600.0 tok/s (641 tok in 4.9s · TTFT: 6282 ms)`. Timing follows
+  pi-token-speed semantics: user message → first streamed content for TTFT,
+  first content event → stream end for duration, measured independently per
+  assistant stream across tool-call rounds. The segment is omitted when
+  timing is missing or degenerate (0 tok / 0 duration / negative TTFT).
+
 ## [0.2.0] - 2026-09-20
 
 ### Added
