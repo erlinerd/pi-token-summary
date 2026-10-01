@@ -85,9 +85,9 @@ export function formatTps(
   if (!Number.isFinite(tps)) return "";
   const ttft =
     typeof timing?.ttftMs === "number" && timing.ttftMs >= 0
-      ? ` · TTFT: ${Math.round(timing.ttftMs)} ms`
+      ? ` · TTFT ${Math.round(timing.ttftMs)}ms`
       : "";
-  return `TPS: ${tps.toFixed(1)} tok/s (${output} tok in ${(dur / 1000).toFixed(1)}s${ttft})`;
+  return `⚡${tps.toFixed(1)} t/s (${(dur / 1000).toFixed(1)}s${ttft})`;
 }
 
 // One-line footer/status render. turnUsage = current turn's usage (or null).
@@ -102,11 +102,11 @@ export function renderStatus(
   if (!cum || (!cum.turns && !turnUsage)) return "";
   const parts: string[] = [];
   if (turnUsage && typeof turnUsage.output === "number") {
-    parts.push(`↓${k(turnUsage.output)} 本轮`);
+    parts.push(`↓${k(turnUsage.output)} ⟳`);
   }
   const tps = formatTps(turnUsage?.output, timing);
   if (tps) parts.push(tps);
-  parts.push(`Σ↓${k(cum.output)} tok`);
+  parts.push(`Σ${k(cum.output)}`);
   parts.push(`ctx ${pct(ctxPct)}`);
   parts.push(usd(cum.cost));
   if (cum.model) parts.push(cum.model);

@@ -80,8 +80,8 @@ test("renderStatus shows per-turn + cumulative + ctx + cost", () => {
     { output: 1200 },
     63.4,
   );
-  assert.match(line, /↓1\.2k 本轮/);
-  assert.match(line, /Σ↓20\.5k tok/);
+  assert.match(line, /↓1\.2k ⟳/);
+  assert.match(line, /Σ20\.5k/);
   assert.match(line, /ctx 63%/);
   assert.match(line, /\$0\.11/);
   assert.match(line, /glm-5\.3-flash/);
@@ -107,7 +107,8 @@ test("renderStatus plain mode: unstyled separator, no ANSI codes", () => {
     model: "glm-5.3-flash",
   };
   const plain = renderStatus(cum, { output: 1200 }, 63.4, { plain: true });
-  assert.match(plain, /↓1\.2k 本轮/);
+  assert.match(plain, /↓1\.2k ⟳/);
+  assert.match(plain, /Σ20\.5k/);
   assert.match(plain, / · /);
   assert.doesNotMatch(plain, /\x1b\[/);
 
@@ -115,7 +116,7 @@ test("renderStatus plain mode: unstyled separator, no ANSI codes", () => {
   assert.match(styled, /\x1b\[2m/);
 });
 
-test("renderStatus with timing: TPS segment after 本轮, before Σ", () => {
+test("renderStatus with timing: TPS segment after ⟳, before Σ", () => {
   const line = renderStatus(
     {
       turns: 5,
@@ -130,15 +131,15 @@ test("renderStatus with timing: TPS segment after 本轮, before Σ", () => {
     { durationMs: 4900, ttftMs: 6282 },
   );
   // 641 tok / 4.9s = 130.8 tok/s
-  assert.match(line, /TPS: 130\.8 tok\/s \(641 tok in 4\.9s · TTFT: 6282 ms\)/);
-  assert.ok(line.indexOf("本轮") < line.indexOf("TPS:"));
-  assert.ok(line.indexOf("TPS:") < line.indexOf("Σ"));
+  assert.match(line, /⚡130\.8 t\/s \(4\.9s · TTFT 6282ms\)/);
+  assert.ok(line.indexOf("⟳") < line.indexOf("⚡"));
+  assert.ok(line.indexOf("⚡") < line.indexOf("Σ"));
 });
 
 test("formatTps omits TTFT when unknown, drops segment when degenerate", () => {
   assert.equal(
     formatTps(641, { durationMs: 4900 }),
-    "TPS: 130.8 tok/s (641 tok in 4.9s)",
+    "⚡130.8 t/s (4.9s)",
   );
   // no duration / zero duration / zero output → no segment
   assert.equal(formatTps(641, {}), "");
@@ -148,6 +149,6 @@ test("formatTps omits TTFT when unknown, drops segment when degenerate", () => {
   // negative TTFT is untrustworthy → dropped, TPS kept
   assert.equal(
     formatTps(641, { durationMs: 4900, ttftMs: -5 }),
-    "TPS: 130.8 tok/s (641 tok in 4.9s)",
+    "⚡130.8 t/s (4.9s)",
   );
 });

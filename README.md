@@ -8,11 +8,11 @@ English | [中文](README.zh-CN.md)
 **Inline token/cost stats for the pi coding agent.** After each agent reply, a dim stats line is appended to the conversation:
 
 ```text
-↓1.2k this turn · Σ↓20.5k tok · ctx 63% · $0.11 · glm-5.3-flash
+↓1.2k ⟳ · Σ20.5k · ctx 63% · ⚡130.8 t/s (4.9s · TTFT 6282ms) · $0.11 · glm-5.3-flash
 ```
 
 - **↓this turn**: output tokens of this reply
-- **Σ↓**: cumulative session output
+- **Σ**: cumulative session output
 - **ctx**: context window usage
 - **$**: cumulative cost
 - model name

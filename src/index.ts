@@ -2,7 +2,7 @@
  * pi-token-summary — token/cost stats for pi.
  *
  * INLINE: after agent turns, a dim stats line is appended to the transcript:
- *      ↓1.2k 本轮 · Σ↓20.5k tok · ctx 63% · $0.11 · glm-5.3-flash
+ *      ↓1.2k ⟳ · Σ20.5k · ctx 63% · ⚡130.8 t/s (4.9s · TTFT 6282ms) · $0.11 · glm-5.3-flash
  * (pi.appendEntry + pi.registerEntryRenderer: persists in the session file,
  * re-renders on resume, never sent to the LLM.)
  *
