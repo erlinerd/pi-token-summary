@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.0] - 2026-10-05
 
 ### Added
 
@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `#EF7C00` under 60, `#B8D430` under 90, bold `#7CFC00` under 120, bold
   `#39FF8E` at 120+. Hue travels red → green and luminance rises monotonically
   across the bands.
+
+### Changed
+
 - TPS unit label changed from `t/s` to `tok/s`.
 
 ## [0.4.0] - 2026-10-02
