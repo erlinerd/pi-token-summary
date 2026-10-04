@@ -19,7 +19,7 @@ English | [中文](README.zh-CN.md)
 
 The stats line is a custom session entry (`appendEntry` + `registerEntryRenderer`): it renders in the TUI only, never enters LLM context, and historical lines re-render when a session is resumed.
 
-The latest turn's TPS is kept **resident in pi's footer** as a status entry (`ctx.ui.setStatus`) — the default footer is kept, this only adds to it. While a stream is in flight it shows a live estimate (`⚡12.3 tok/s (3.2s · live)`), then the exact value once usage lands. Every streamed chunk repaints it — no throttle, no easing — so the number moves at the pace the provider streams. The ⚡ icon and number are colored by speed, dim red when slow and bright emboldened green when fast: `#A31010` under 10, `#E3170D` under 30, `#EF7C00` under 60, `#B8D430` under 90, bold `#7CFC00` under 120, bold `#39FF8E` at 120+. The footer is independent of the inline mode: `off` hides the transcript line only.
+The latest turn's TPS is kept **resident in pi's footer** as a status entry (`ctx.ui.setStatus`) — the default footer is kept, this only adds to it. While a stream is in flight it shows the running TPS (`⚡12.3 tok/s (3.2s)`), then the exact value once usage lands. Every streamed chunk repaints it — no throttle, no easing — so the number moves at the pace the provider streams. The ⚡ icon and number are colored by speed, dim red when slow and bright emboldened green when fast: `#A31010` under 10, `#E3170D` under 30, `#EF7C00` under 60, `#B8D430` under 90, bold `#7CFC00` under 120, bold `#39FF8E` at 120+. The footer is independent of the inline mode: `off` hides the transcript line only.
 
 ## Display modes
 

@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-10-05
+
+### Fixed
+
+- TTFT no longer accumulates across the rounds of one turn. The clock now
+  resets at the start of every assistant request (user message, then each
+  `toolResult` that feeds the next round) instead of only at the user message.
+  Previously a turn with tool calls measured a later round's TTFT from the user
+  message that began the turn, so the figure grew with every round.
+  Measured over four rounds that each waited ~200 ms: 202 → 186 → 220 → 192 ms
+  now, versus 203 → 733 → 1294 → 1839 ms before.
+
+### Changed
+
+- The footer no longer tags mid-stream values with `· live`. The number is
+  transient either way, and `turn_end` replaces it with the exact figure, so
+  the tag was noise. The `estimate` option in `formatTps()` is gone with it.
+
 ## [0.5.0] - 2026-10-05
 
 ### Added

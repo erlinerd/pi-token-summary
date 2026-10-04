@@ -16,8 +16,8 @@
  *
  * FOOTER: the TPS figure is kept resident in pi's footer as a status entry
  * (ctx.ui.setStatus — appended next to the default footer, never replacing it).
- * While a stream is in flight it shows a live estimate (`⚡12.3 tok/s (3.2s ·
- * live)`), then the exact turn value once usage lands. Every content delta
+ * While a stream is in flight it shows the running TPS (`⚡12.3 tok/s (3.2s)`),
+ * then the exact turn value once usage lands. Every content delta
  * repaints it — no throttle, no easing. The ⚡ icon and number are color-banded
  * by speed. Independent of the inline mode: `off` hides the transcript line
  * only, the footer keeps updating.
@@ -105,9 +105,11 @@ export default function (pi: any) {
   let seeded = false;
   let mode: Mode = loadMode();
 
-  // Per-stream timing for the TPS segment. Semantics follow pi-token-speed:
-  // TTFT = user message → first streamed content of the current assistant
-  // stream; duration = first content → turn_end of the same stream.
+  // Per-stream timing for the TPS segment. TTFT = this round's request start
+  // (user message, or the toolResult that feeds the next round) → first
+  // streamed content; duration = first content → turn_end of the same stream.
+  // Timed per assistant stream, so a tool-call turn reports one TTFT per round
+  // instead of a growing total.
   let ttftStart = 0;
   let streamStart = 0;
   let ttftMs: number | null = null;
@@ -179,7 +181,14 @@ export default function (pi: any) {
   });
 
   pi.on("message_start", async (event: any) => {
-    if (event?.message?.role === "user") {
+    const role = event?.message?.role;
+    // Reset the TTFT clock where a new assistant request begins: the user
+    // message for the first round, and the toolResult message for every round
+    // after a tool call. pi fires the assistant's own message_start only once
+    // the provider's response headers are back, so using it would measure ~0.
+    // Without these resets, a turn with tool calls keeps timing from the user
+    // message and TTFT grows with every round of the same turn.
+    if (role === "user" || role === "toolResult") {
       ttftStart = Date.now();
       ttftMs = null;
     }
@@ -216,7 +225,7 @@ export default function (pi: any) {
     const tps = formatTps(
       liveTokens,
       { durationMs: now - streamStart, ttftMs },
-      { colorTps: true, estimate: true },
+      { colorTps: true },
     );
     if (!tps) return;
     try {

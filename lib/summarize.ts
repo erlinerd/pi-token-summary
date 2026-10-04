@@ -99,7 +99,7 @@ export function tpsColor(tps: number): string {
 export function formatTps(
   output: number | undefined,
   timing?: TurnTiming,
-  opts?: { colorTps?: boolean; estimate?: boolean },
+  opts?: { colorTps?: boolean },
 ): string {
   const dur = timing?.durationMs;
   if (!output || !dur || dur <= 0) return "";
@@ -108,16 +108,16 @@ export function formatTps(
   const rate = opts?.colorTps
     ? `${tpsColor(tps)}⚡${tps.toFixed(1)}${RESET}`
     : `⚡${tps.toFixed(1)}`;
-  const live = opts?.estimate ? " · live" : "";
   const ttft =
     typeof timing?.ttftMs === "number" && timing.ttftMs >= 0
       ? ` · TTFT ${Math.round(timing.ttftMs)}ms`
       : "";
-  return `${rate} tok/s (${(dur / 1000).toFixed(1)}s${ttft}${live})`;
+  return `${rate} tok/s (${(dur / 1000).toFixed(1)}s${ttft})`;
 }
 
-// Rough streaming token estimate for live TPS: CJK chars cost ~1 token each,
-// other text ~4 chars per token. Corrected by exact usage at turn_end.
+// Rough streaming token count for the footer's mid-stream TPS: CJK chars cost
+// ~1 token each, other text ~4 chars per token. Replaced by exact usage at
+// turn_end; not labelled as an estimate, the number is transient either way.
 export function estimateTokens(text: string): number {
   if (!text) return 0;
   let tokens = 0;

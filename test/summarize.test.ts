@@ -155,15 +155,6 @@ test("formatTps omits TTFT when unknown, drops segment when degenerate", () => {
   );
 });
 
-test("formatTps estimate marks the live value", () => {
-  assert.equal(
-    formatTps(50, { durationMs: 1000 }, { estimate: true }),
-    "⚡50.0 tok/s (1.0s · live)",
-  );
-  // exact path has no marks
-  assert.equal(formatTps(50, { durationMs: 1000 }), "⚡50.0 tok/s (1.0s)");
-});
-
 test("estimateTokens: CJK ≈1 tok/char, latin ≈4 chars/tok", () => {
   assert.equal(estimateTokens(""), 0);
   assert.equal(estimateTokens("你好世界"), 4);
