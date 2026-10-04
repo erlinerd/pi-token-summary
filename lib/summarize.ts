@@ -75,19 +75,58 @@ const usd = (v: number): string =>
 
 // "TPS: 1600.0 tok/s (641 tok in 4.9s · TTFT: 6282 ms)" — omitted when stream
 // timing is missing or degenerate (zero tokens / zero duration).
+// opts.colorTps wraps the icon and number with the speed color ramp in
+// tpsColor() — dim red when slow, bright emboldened green when fast.
+const RESET = "\x1b[0m";
+const BOLD = "\x1b[1m";
+const hexToAnsi = (hex: string): string => {
+  const n = parseInt(hex.slice(1), 16);
+  return `\x1b[38;2;${(n >> 16) & 255};${(n >> 8) & 255};${n & 255}m`;
+};
+
+// Speed color ramp, worst → best. Hue travels red → green and luminance rises
+// monotonically, so a dimmer, redder number reads as a slower stream.
+// Bands ≥90 also embolden; RESET in the caller clears weight and color alike.
+export function tpsColor(tps: number): string {
+  if (tps < 10) return hexToAnsi("#A31010");
+  if (tps < 30) return hexToAnsi("#E3170D");
+  if (tps < 60) return hexToAnsi("#EF7C00");
+  if (tps < 90) return hexToAnsi("#B8D430");
+  if (tps < 120) return `${BOLD}${hexToAnsi("#7CFC00")}`;
+  return `${BOLD}${hexToAnsi("#39FF8E")}`;
+}
+
 export function formatTps(
   output: number | undefined,
   timing?: TurnTiming,
+  opts?: { colorTps?: boolean; estimate?: boolean },
 ): string {
   const dur = timing?.durationMs;
   if (!output || !dur || dur <= 0) return "";
   const tps = output / (dur / 1000);
-  if (!Number.isFinite(tps)) return "";
+  if (!Number.isFinite(tps) || tps <= 0) return "";
+  const rate = opts?.colorTps
+    ? `${tpsColor(tps)}⚡${tps.toFixed(1)}${RESET}`
+    : `⚡${tps.toFixed(1)}`;
+  const live = opts?.estimate ? " · live" : "";
   const ttft =
     typeof timing?.ttftMs === "number" && timing.ttftMs >= 0
       ? ` · TTFT ${Math.round(timing.ttftMs)}ms`
       : "";
-  return `⚡${tps.toFixed(1)} t/s (${(dur / 1000).toFixed(1)}s${ttft})`;
+  return `${rate} tok/s (${(dur / 1000).toFixed(1)}s${ttft}${live})`;
+}
+
+// Rough streaming token estimate for live TPS: CJK chars cost ~1 token each,
+// other text ~4 chars per token. Corrected by exact usage at turn_end.
+export function estimateTokens(text: string): number {
+  if (!text) return 0;
+  let tokens = 0;
+  for (const ch of text) {
+    tokens += /[\u3000-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF\u3040-\u30FF]/.test(ch)
+      ? 1
+      : 0.25;
+  }
+  return tokens;
 }
 
 // One-line footer/status render. turnUsage = current turn's usage (or null).

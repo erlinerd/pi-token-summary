@@ -8,7 +8,7 @@ English | [中文](README.zh-CN.md)
 pi coding agent 的 **token 消耗内联显示**扩展。agent 回复后，会话流里直接追加一行暗色统计：
 
 ```text
-↓1.2k ⟳ · Σ20.5k · ctx 63% · ⚡130.8 t/s (4.9s · TTFT 6282ms) · $0.11 · glm-5.3-flash
+↓1.2k ⟳ · Σ20.5k · ctx 63% · ⚡130.8 tok/s (4.9s · TTFT 6282ms) · $0.11 · glm-5.3-flash
 ```
 
 - **↓⟳**：这条回复输出的 token
@@ -18,6 +18,8 @@ pi coding agent 的 **token 消耗内联显示**扩展。agent 回复后，会�
 - 模型名
 
 统计行是自定义 session 条目（`appendEntry` + `registerEntryRenderer`），只进 TUI 渲染、不参与 LLM 上下文，resume 旧会话时历史统计行原样重现。
+
+最近一轮的 TPS **常驻在 pi 的 footer**，以状态项形式追加（`ctx.ui.setStatus`）——不替换默认 footer。流式输出期间显示实时估算值（`⚡12.3 tok/s (3.2s · live)`），本轮 usage 到位后换成准确值。每个数据块都直接重画，不节流不缓动，数字跟着流的节奏走。⚡ 图标与数字按速度着色，越慢越暗越红，越快越亮越绿并加粗：10 以下 `#A31010`、30 以下 `#E3170D`、60 以下 `#EF7C00`、90 以下 `#B8D430`、120 以下粗体 `#7CFC00`、120 及以上粗体 `#39FF8E`。footer 与内联模式无关：`off` 只隐藏会话流里的统计行，footer 照常刷新。
 
 ## 三档显示模式
 

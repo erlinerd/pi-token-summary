@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- TPS in pi's footer, resident and live: `ctx.ui.setStatus()` appends a status
+  entry next to the default footer (the default footer is never replaced).
+  During a stream it shows a live estimate (`⚡12.3 tok/s (3.2s · live)`),
+  then the exact value once `turn_end` usage arrives. Every streamed chunk
+  repaints the entry directly — no throttle, no easing. Independent of the
+  inline mode: `off` hides the transcript line only, the footer keeps updating.
+- Speed color ramp on the footer icon and number, dim-and-red when slow,
+  bright-and-bold when fast: `#A31010` under 10, `#E3170D` under 30,
+  `#EF7C00` under 60, `#B8D430` under 90, bold `#7CFC00` under 120, bold
+  `#39FF8E` at 120+. Hue travels red → green and luminance rises monotonically
+  across the bands.
+- TPS unit label changed from `t/s` to `tok/s`.
+
 ## [0.4.0] - 2026-10-02
 
 ### Changed

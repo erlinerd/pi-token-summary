@@ -4,7 +4,9 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  estimateTokens,
   formatTps,
+  tpsColor,
   renderLine,
   renderStatus,
   summarizeSessionFile,
@@ -131,7 +133,7 @@ test("renderStatus with timing: TPS segment after ⟳, before Σ", () => {
     { durationMs: 4900, ttftMs: 6282 },
   );
   // 641 tok / 4.9s = 130.8 tok/s
-  assert.match(line, /⚡130\.8 t\/s \(4\.9s · TTFT 6282ms\)/);
+  assert.match(line, /⚡130\.8 tok\/s \(4\.9s · TTFT 6282ms\)/);
   assert.ok(line.indexOf("⟳") < line.indexOf("⚡"));
   assert.ok(line.indexOf("⚡") < line.indexOf("Σ"));
 });
@@ -139,7 +141,7 @@ test("renderStatus with timing: TPS segment after ⟳, before Σ", () => {
 test("formatTps omits TTFT when unknown, drops segment when degenerate", () => {
   assert.equal(
     formatTps(641, { durationMs: 4900 }),
-    "⚡130.8 t/s (4.9s)",
+    "⚡130.8 tok/s (4.9s)",
   );
   // no duration / zero duration / zero output → no segment
   assert.equal(formatTps(641, {}), "");
@@ -149,6 +151,46 @@ test("formatTps omits TTFT when unknown, drops segment when degenerate", () => {
   // negative TTFT is untrustworthy → dropped, TPS kept
   assert.equal(
     formatTps(641, { durationMs: 4900, ttftMs: -5 }),
-    "⚡130.8 t/s (4.9s)",
+    "⚡130.8 tok/s (4.9s)",
   );
+});
+
+test("formatTps estimate marks the live value", () => {
+  assert.equal(
+    formatTps(50, { durationMs: 1000 }, { estimate: true }),
+    "⚡50.0 tok/s (1.0s · live)",
+  );
+  // exact path has no marks
+  assert.equal(formatTps(50, { durationMs: 1000 }), "⚡50.0 tok/s (1.0s)");
+});
+
+test("estimateTokens: CJK ≈1 tok/char, latin ≈4 chars/tok", () => {
+  assert.equal(estimateTokens(""), 0);
+  assert.equal(estimateTokens("你好世界"), 4);
+  assert.equal(estimateTokens("abcd"), 1);
+  assert.equal(estimateTokens("你好 abcd"), 3.25);
+});
+
+test("formatTps colorTps colors the icon and number by speed band", () => {
+  const line = formatTps(641, { durationMs: 4900 }, { colorTps: true });
+  assert.ok(
+    line.startsWith(`${tpsColor(130.8)}⚡130.8\x1b[0m tok/s (4.9s)`),
+    line,
+  );
+  // ramp: 6 bands at 10/30/60/90/120, ≥90 emboldened
+  assert.equal(tpsColor(5), "\x1b[38;2;163;16;16m");
+  assert.equal(tpsColor(20), "\x1b[38;2;227;23;13m");
+  assert.equal(tpsColor(45), "\x1b[38;2;239;124;0m");
+  assert.equal(tpsColor(75), "\x1b[38;2;184;212;48m");
+  assert.equal(tpsColor(103), "\x1b[1m\x1b[38;2;124;252;0m");
+  assert.equal(tpsColor(138), "\x1b[1m\x1b[38;2;57;255;142m");
+  // band membership: equal within, different across boundaries
+  assert.equal(tpsColor(9.9), tpsColor(0.1));
+  assert.notEqual(tpsColor(9.9), tpsColor(10));
+  assert.notEqual(tpsColor(29.9), tpsColor(30));
+  assert.notEqual(tpsColor(59.9), tpsColor(60));
+  assert.notEqual(tpsColor(89.9), tpsColor(90));
+  assert.notEqual(tpsColor(119.9), tpsColor(120));
+  // non-colored path stays ANSI-free
+  assert.ok(!formatTps(641, { durationMs: 4900 }).includes("\x1b["));
 });
