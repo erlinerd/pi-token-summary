@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2026-10-05
+
+### Fixed
+
+- The footer TPS entry no longer changes width while it repaints. All numeric
+  fields are padded to constant widths (TPS 6, duration 5, TTFT 5 characters)
+  and the TTFT segment is always rendered — `--` placeholder when the
+  measurement is unknown — so the entry occupies one fixed width in every
+  state (mid-stream, final, placeholder) instead of shifting the rest of the
+  bar at every digit boundary. Inline transcript lines keep the compact
+  format.
+
 ## [0.5.1] - 2026-10-05
 
 ### Fixed
