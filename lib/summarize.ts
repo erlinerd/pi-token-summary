@@ -96,23 +96,34 @@ export function tpsColor(tps: number): string {
   return `${BOLD}${hexToAnsi("#39FF8E")}`;
 }
 
+// Fixed-width mode (footer): every numeric field is padded and the TTFT
+// segment is ALWAYS present (placeholder when unknown), so the resident
+// status entry never changes width while it repaints. Field widths: TPS 6,
+// duration 5+"s", TTFT 5+"ms" — enough for 9999.9 tok/s, 9999.9 s, 99999 ms.
 export function formatTps(
   output: number | undefined,
   timing?: TurnTiming,
-  opts?: { colorTps?: boolean },
+  opts?: { colorTps?: boolean; fixedWidth?: boolean },
 ): string {
   const dur = timing?.durationMs;
   if (!output || !dur || dur <= 0) return "";
   const tps = output / (dur / 1000);
   if (!Number.isFinite(tps) || tps <= 0) return "";
+  const fixed = opts?.fixedWidth === true;
+  const tpsNum = tps.toFixed(1);
   const rate = opts?.colorTps
-    ? `${tpsColor(tps)}⚡${tps.toFixed(1)}${RESET}`
-    : `⚡${tps.toFixed(1)}`;
-  const ttft =
-    typeof timing?.ttftMs === "number" && timing.ttftMs >= 0
-      ? ` · TTFT ${Math.round(timing.ttftMs)}ms`
-      : "";
-  return `${rate} tok/s (${(dur / 1000).toFixed(1)}s${ttft})`;
+    ? `${tpsColor(tps)}⚡${fixed ? tpsNum.padStart(6) : tpsNum}${RESET}`
+    : `⚡${fixed ? tpsNum.padStart(6) : tpsNum}`;
+  const durNum = (dur / 1000).toFixed(1);
+  const durPart = fixed ? `${durNum.padStart(5)}s` : `${durNum}s`;
+  const ttftMs = timing?.ttftMs;
+  const ttftKnown = typeof ttftMs === "number" && ttftMs >= 0;
+  if (fixed) {
+    const ttftStr = ttftKnown ? String(Math.round(ttftMs)).padStart(5) : "   --";
+    return `${rate} tok/s (${durPart} · TTFT ${ttftStr}ms)`;
+  }
+  const ttft = ttftKnown ? ` · TTFT ${Math.round(ttftMs)}ms` : "";
+  return `${rate} tok/s (${durPart}${ttft})`;
 }
 
 // Rough streaming token count for the footer's mid-stream TPS: CJK chars cost

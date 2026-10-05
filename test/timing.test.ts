@@ -35,7 +35,8 @@ function harness() {
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const ttftOf = (line: string) => Number(/TTFT (\d+)ms/.exec(line)?.[1] ?? -1);
+const ttftOf = (line: string) =>
+  Number(/TTFT\s+(\d+)ms/.exec(line)?.[1] ?? -1);
 const plain = (line: string) => line.replace(/\x1b\[[0-9;]*m/g, "");
 
 // One assistant round: request starts on `role`, waits `latencyMs` for the
@@ -96,6 +97,7 @@ test("footer line format: icon, rate, unit, elapsed, TTFT", async () => {
   await h.handlers.session_start({}, h.ctx);
   await round(h, "user", 60);
   const line = plain(h.footer.at(-1)!);
-  assert.match(line, /^⚡[\d.]+ tok\/s \([\d.]+s · TTFT \d+ms\)$/);
+  // footer is fixed-width: numeric fields carry leading pad spaces
+  assert.match(line, /^⚡\s*[\d.]+ tok\/s \(\s*[\d.]+s · TTFT\s+[\d]+ms\)$/);
   assert.ok(!line.includes("live"), `final value must not be tagged live: ${line}`);
 });

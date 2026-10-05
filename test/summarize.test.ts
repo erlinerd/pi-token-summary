@@ -155,6 +155,45 @@ test("formatTps omits TTFT when unknown, drops segment when degenerate", () => {
   );
 });
 
+test("formatTps fixedWidth: constant width, TTFT segment always present", () => {
+  const width = (s: string) => s.replace(/\x1b\[[0-9;]*m/g, "").length;
+  // small + large values must occupy identical width
+  const small = formatTps(
+    31,
+    { durationMs: 10000, ttftMs: 6282 },
+    { fixedWidth: true },
+  );
+  const large = formatTps(
+    6410,
+    { durationMs: 49000, ttftMs: 118 },
+    { fixedWidth: true },
+  );
+  assert.match(small, /⚡   3\.1 tok\/s \( 10\.0s · TTFT  6282ms\)/);
+  assert.match(large, /⚡ ?130\.8 tok\/s \( 49\.0s · TTFT   118ms\)/);
+  assert.equal(width(small), width(large));
+  // unknown TTFT keeps the segment with a placeholder, same width
+  const noTtft = formatTps(641, { durationMs: 4900 }, { fixedWidth: true });
+  assert.match(noTtft, /· TTFT    --ms/);
+  assert.equal(width(noTtft), width(small));
+  // negative ttft treated as unknown
+  const negTtft = formatTps(
+    641,
+    { durationMs: 4900, ttftMs: -5 },
+    { fixedWidth: true },
+  );
+  assert.equal(width(negTtft), width(small));
+  // colorTps composes: color codes add no width
+  const colored = formatTps(
+    31,
+    { durationMs: 10000, ttftMs: 6282 },
+    { colorTps: true, fixedWidth: true },
+  );
+  assert.ok(colored.startsWith(`${tpsColor(3.1)}⚡   3.1\x1b[0m tok/s`), colored);
+  assert.equal(width(colored), width(small));
+  // degenerate inputs still drop the segment entirely
+  assert.equal(formatTps(0, { durationMs: 4900 }, { fixedWidth: true }), "");
+});
+
 test("estimateTokens: CJK ≈1 tok/char, latin ≈4 chars/tok", () => {
   assert.equal(estimateTokens(""), 0);
   assert.equal(estimateTokens("你好世界"), 4);

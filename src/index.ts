@@ -19,7 +19,9 @@
  * While a stream is in flight it shows the running TPS (`⚡12.3 tok/s (3.2s)`),
  * then the exact turn value once usage lands. Every content delta
  * repaints it — no throttle, no easing. The ⚡ icon and number are color-banded
- * by speed. Independent of the inline mode: `off` hides the transcript line
+ * by speed. All numeric fields are fixed-width and the TTFT segment is always
+ * present (placeholder when unknown), so the entry never changes width.
+ * Independent of the inline mode: `off` hides the transcript line
  * only, the footer keeps updating.
  */
 import { Text } from "@earendil-works/pi-tui";
@@ -225,7 +227,8 @@ export default function (pi: any) {
     const tps = formatTps(
       liveTokens,
       { durationMs: now - streamStart, ttftMs },
-      { colorTps: true },
+      // fixedWidth: the resident footer must not change width while streaming
+      { colorTps: true, fixedWidth: true },
     );
     if (!tps) return;
     try {
@@ -262,6 +265,7 @@ export default function (pi: any) {
     // only.
     const footerTps = formatTps(usage?.output || liveTokens, timing, {
       colorTps: true,
+      fixedWidth: true,
     });
     liveTokens = 0;
     if (footerTps) {
